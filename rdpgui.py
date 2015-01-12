@@ -75,7 +75,7 @@ class Ui_RDPGUI(object):
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName(_fromUtf8("label"))
         self.widget = QtGui.QWidget(RDPGUI)
-        self.widget.setGeometry(QtCore.QRect(190, 380, 231, 44))
+        self.widget.setGeometry(QtCore.QRect(190, 380, 231, 66))
         self.widget.setObjectName(_fromUtf8("widget"))
         self.gridLayout = QtGui.QGridLayout(self.widget)
         self.gridLayout.setMargin(0)
@@ -87,21 +87,31 @@ class Ui_RDPGUI(object):
         self.serverBox = QtGui.QComboBox(self.widget)
         self.serverBox.setStyleSheet(_fromUtf8("color: rgb(255, 255, 255);"))
         self.serverBox.setObjectName(_fromUtf8("serverBox"))
+        self.serverBox.setEditable(True)
         self.gridLayout.addWidget(self.serverBox, 0, 1, 1, 1)
         self.domainlabel = QtGui.QLabel(self.widget)
         self.domainlabel.setStyleSheet(_fromUtf8("color: rgb(255, 255, 255);"))
         self.domainlabel.setObjectName(_fromUtf8("domainlabel"))
         self.gridLayout.addWidget(self.domainlabel, 1, 0, 1, 1)
-        self.RDPdomain = QtGui.QLabel(self.widget)
+        self.RDPdomain = QtGui.QLineEdit(self.widget)
         self.RDPdomain.setStyleSheet(_fromUtf8("color: rgb(255, 255, 255);"))
         self.RDPdomain.setObjectName(_fromUtf8("RDPdomain"))
         self.gridLayout.addWidget(self.RDPdomain, 1, 1, 1, 1)
 
+        self.portLabel = QtGui.QLabel(self.widget)
+        self.portLabel.setStyleSheet(_fromUtf8("color: rgb(255, 255, 255);"))
+        self.portLabel.setObjectName(_fromUtf8("portLabel"))
+        self.gridLayout.addWidget(self.portLabel, 2, 0, 1, 1)
+        self.portLine = QtGui.QLineEdit(self.widget)
+        self.portLine.setStyleSheet(_fromUtf8("color: rgb(255, 255, 255);"))
+        self.portLine.setObjectName(_fromUtf8("portLine"))
+        self.gridLayout.addWidget(self.portLine, 2, 1, 1, 1)
+
         self.retranslateUi(RDPGUI)
         QtCore.QObject.connect(self.RDPpassword, QtCore.SIGNAL(_fromUtf8("returnPressed()")), self.enterButton.click)
-	QtCore.QObject.connect(self.RDPusername, QtCore.SIGNAL(_fromUtf8("editingFinished()")), self.checkdomain)
+        QtCore.QObject.connect(self.RDPusername, QtCore.SIGNAL(_fromUtf8("editingFinished()")), self.checkdomain)
         QtCore.QMetaObject.connectSlotsByName(RDPGUI)
-	centreWidget(RDPGUI)
+        centreWidget(RDPGUI)
 
     def retranslateUi(self, RDPGUI):
         RDPGUI.setWindowTitle(_translate("RDPGUI", "RDPGUI", None))
@@ -113,68 +123,76 @@ class Ui_RDPGUI(object):
         self.serverBox.setItemText(0, _translate("RDPGUI", "server1.domain.lan", None))
         self.domainlabel.setText(_translate("RDPGUI", "Domain:", None))
         self.RDPdomain.setText(_translate("RDPGUI", "DOMAIN", None))
-	self.enterButton.clicked.connect(self.handleButton)
-	self.exitButton.clicked.connect(self.doExitNow)
-	config = ConfigParser.ConfigParser()
-	config.read('rdpgui.ini')
-	serverlist = str(config.get("DEFAULT", "RDPServer")).split()
-	for n in range(len(serverlist)):
-		self.serverBox.addItem(_fromUtf8(""))
-		self.serverBox.setItemText(n, _translate("RDPGUI", serverlist[n].strip(), None))
+        self.portLabel.setText(_translate("RDPGUI", "Port:", None))
+        self.portLine.setText(_translate("RDPGUI", "3389", None))
+        self.enterButton.clicked.connect(self.handleButton)
+        self.exitButton.clicked.connect(self.doExitNow)
+        config = ConfigParser.ConfigParser()
+        config.read('rdpgui.ini')
+        serverlist = str(config.get("DEFAULT", "RDPServer")).split()
+        for n in range(len(serverlist)):
+            self.serverBox.addItem(_fromUtf8(""))
+            self.serverBox.setItemText(n, _translate("RDPGUI", serverlist[n].strip(), None))
 
-	self.RDPdomain.setText(_translate("RDPGUI", config.get("DEFAULT", "RDPDomain"), None))
+        self.RDPdomain.setText(_translate("RDPGUI", config.get("DEFAULT", "RDPDomain"), None))
+        self.portLine.setText(_translate("RDPGUI", config.get("DEFAULT", "RDPPort"), None))
 
 
     def checkdomain(self):
-	#updating DOMAIN label if domain in. ex: DOMAIN\username
-	if str(self.RDPusername.text()).find("\\") > 0:
-		self.RDPdomain.setText(_translate("RDPGUI", str(self.RDPusername.text()).split('\\')[0], None))
-	else:
-		config = ConfigParser.ConfigParser()
-		config.read('rdpgui.ini')
-		self.RDPdomain.setText(_translate("RDPGUI", config.get("DEFAULT", "RDPDomain"), None))
+        #updating DOMAIN label if domain in. ex: DOMAIN\username
+        if str(self.RDPusername.text()).find("\\") > 0:
+            self.RDPdomain.setText(_translate("RDPGUI", str(self.RDPusername.text()).split('\\')[0], None))
+        else:
+            config = ConfigParser.ConfigParser()
+            config.read('rdpgui.ini')
+            self.RDPdomain.setText(_translate("RDPGUI", config.get("DEFAULT", "RDPDomain"), None))
 
     def doExitNow(self):
         sys.exit(app.exec_());
 
     def handleButton(self):
-	config = ConfigParser.ConfigParser()
-	config.read('rdpgui.ini')
-	ServerFlag = config.get("DEFAULT", "RDPServerFlags") + str(self.serverBox.currentText())
-	#checking if username have domain in. ex: DOMAIN\username
-	if str(self.RDPusername.text()).find("\\") > 0:
-		DomainFlag = config.get("DEFAULT", "RDPDomainFlags") + str(self.RDPusername.text()).split('\\')[0]
-		UserFlag = config.get("DEFAULT", "RDPUserFlags") + str(self.RDPusername.text()).split('\\')[1]
-	else:
-		DomainFlag = config.get("DEFAULT", "RDPDomainFlags") + config.get("DEFAULT", "RDPDomain")
-		UserFlag = config.get("DEFAULT", "RDPUserFlags") + self.RDPusername.text()
-	User_Pass = config.get("DEFAULT", "RDPPasswordFlags") + self.RDPpassword.text() + ' ' + UserFlag
-	commandline = str(config.get("DEFAULT", "RDPBinary") + ' ' + DomainFlag +' '+ User_Pass + ' ' + config.get("DEFAULT", "RDPDefaulfFlags") + ' ' + config.get("DEFAULT", "RDPExtraFlags") + ' ' + ServerFlag)
-	#cleaning dquote from confi.ini params
-	commandline = re.sub('["]','',commandline)
-	#print commandline
-	proc = subprocess.Popen(commandline, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-	(out, err) = proc.communicate()
-	print "-------------------------------------------------------------"
-	print out
-	if out.find("Authentication failure, check credentials") > 0:
-		print "Authentication failure!"
-		self.version.setText(_translate("RDPGUI", "Auth Error...", None))
-		self.label.setText(_fromUtf8("Wrong username or password!"))
-	elif out.find("getaddrinfo (System error)") > 0 or out.find("getaddrinfo: System error") >= 0:
-		print "Error connecting to server!"
-		self.version.setText(_translate("RDPGUI", "Server Error...", None))
-		self.label.setText(_fromUtf8("Server Error, call your sysadmin"))
-	elif out.find("unable to connect to") >= 0 or out.find("A Remote Desktop Protocol client") >= 0:
-		print "Error connecting to server!"
-		self.version.setText(_translate("RDPGUI", "Server Error...", None))
-		self.label.setText(_fromUtf8("Server Error, call your sysadmin"))
-	else:
-		self.RDPusername.setText(_translate("RDPGUI", "", None))
-		self.RDPpassword.setText(_translate("RDPGUI", "", None))
-		self.version.setText(_translate("RDPGUI", "rpi-tc rdp gui v1", None))
-		self.RDPdomain.setText(_translate("RDPGUI", config.get("DEFAULT", "RDPDomain"), None))
-		self.label.setText(_fromUtf8(""))
+        config = ConfigParser.ConfigParser()
+        config.read('rdpgui.ini')
+        ServerFlag = config.get("DEFAULT", "RDPServerFlags") + str(self.serverBox.currentText())
+        #checking if username have domain in. ex: DOMAIN\username
+        domain = self.RDPdomain.text()
+        if str(self.RDPusername.text()).find("\\") > 0:
+            DomainFlag = config.get("DEFAULT", "RDPDomainFlags") + str(self.RDPusername.text()).split('\\')[0]
+            UserFlag = config.get("DEFAULT", "RDPUserFlags") + str(self.RDPusername.text()).split('\\')[1]
+        else:
+            DomainFlag = config.get("DEFAULT", "RDPDomainFlags") + domain
+            UserFlag = config.get("DEFAULT", "RDPUserFlags") + self.RDPusername.text()
+        User_Pass = config.get("DEFAULT", "RDPPasswordFlags") + self.RDPpassword.text() + ' ' + UserFlag
+        port = self.portLine.text()
+        commandline = str(config.get("DEFAULT", "RDPBinary") + ' ' + DomainFlag +' '+
+                    User_Pass + ' ' + config.get("DEFAULT", "RDPDefaulfFlags") + ' ' +
+                    config.get("DEFAULT", "RDPExtraFlags") + ' ' + ServerFlag + ':' +
+                    port)
+        #cleaning dquote from confi.ini params
+        commandline = re.sub('["]','',commandline)
+        print(commandline)
+        proc = subprocess.Popen(commandline, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        (out, err) = proc.communicate()
+        print "-------------------------------------------------------------"
+        print out
+        if out.find("Authentication failure, check credentials") > 0:
+            print "Authentication failure!"
+            self.version.setText(_translate("RDPGUI", "Auth Error...", None))
+            self.label.setText(_fromUtf8("Wrong username or password!"))
+        elif out.find("getaddrinfo (System error)") > 0 or out.find("getaddrinfo: System error") >= 0:
+            print "Error connecting to server!"
+            self.version.setText(_translate("RDPGUI", "Server Error...", None))
+            self.label.setText(_fromUtf8("Server Error, call your sysadmin"))
+        elif out.find("unable to connect to") >= 0 or out.find("A Remote Desktop Protocol client") >= 0:
+            print "Error connecting to server!"
+            self.version.setText(_translate("RDPGUI", "Server Error...", None))
+            self.label.setText(_fromUtf8("Server Error, call your sysadmin"))
+        else:
+            self.RDPusername.setText(_translate("RDPGUI", "", None))
+            self.RDPpassword.setText(_translate("RDPGUI", "", None))
+            self.version.setText(_translate("RDPGUI", "rpi-tc rdp gui v1", None))
+            self.RDPdomain.setText(_translate("RDPGUI", config.get("DEFAULT", "RDPDomain"), None))
+            self.label.setText(_fromUtf8(""))
 
 
 def centreWidget(self):
